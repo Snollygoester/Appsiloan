@@ -6,7 +6,9 @@
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
-
+#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "BallParent.h"
+#include "Engine/World.h"
 // Sets default values
 AMovingCharacterParent::AMovingCharacterParent()
 {
@@ -34,6 +36,8 @@ AMovingCharacterParent::AMovingCharacterParent()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepRelativeTransform);
 	FollowCamera->bUsePawnControlRotation = true;
+
+	PhysicsHandleComponent = CreateDefaultSubobject<UPhysicsHandleComponent>(TEXT("PhysicsHandleComponent"));
 }
 
 // Called when the game starts or when spawned
@@ -58,8 +62,9 @@ void AMovingCharacterParent::SetupPlayerInputComponent(UInputComponent* PlayerIn
 	check(PlayerInputComponent);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
-
-	PlayerInputComponent->BindAxis("MoveForward", this, &AMovingCharacterParent::MoveForward);
+	
+	PlayerInputComponent->BindAction("PickUpBall", IE_Released, this, &AMovingCharacterParent::PickUpBall);
+    PlayerInputComponent->BindAxis("MoveForward", this, &AMovingCharacterParent::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AMovingCharacterParent::MoveRight);
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
@@ -110,5 +115,18 @@ void AMovingCharacterParent::MoveRight(float Value)
 		const FVector Direction = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 		// add movement in that direction
 		AddMovementInput(Direction, Value);
+	}
+}
+// Ball
+void AMovingCharacterParent::PickUpBall()
+{
+	FHitResult Hit;
+	if (GetWorld()->LineTraceSingleByChannel(Hit, FollowCamera->GetComponentLocation(), FollowCamera->GetComponentLocation() + FollowCamera->GetForwardVector() * PickUpBallRange, ECollisionChannel::ECC_Visibility))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("LineTraceSingleByChannel %s"), *Hit.Actor->GetName())
+		if (Cast<ABallParent>(Hit.Actor))
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Get a ball"))
+		}
 	}
 }

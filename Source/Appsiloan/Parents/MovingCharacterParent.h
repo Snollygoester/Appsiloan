@@ -38,7 +38,8 @@ public:
 	/** Base look up/down rate, in deg/sec. Other scaling may affect final rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera)
 		float BaseLookUpRate;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = PhysicsHandle, meta = (AllowPrivateAccess = "true"))
+		class UPhysicsHandleComponent * PhysicsHandleComponent;
 protected:
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
@@ -63,7 +64,10 @@ protected:
 public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
-
+private:
+	void PickUpBall();
+	UPROPERTY(EditAnywhere)
+	float PickUpBallRange = 500; // in cm
 
 	
 };
